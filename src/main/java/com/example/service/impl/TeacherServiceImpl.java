@@ -1,0 +1,143 @@
+package com.example.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.mapper.RoleMapper;
+import com.example.mapper.TeacherMapper;
+import com.example.mapper.TeacherRoleMapper;
+import com.example.pojo.Role;
+import com.example.pojo.Teacher;
+import com.example.pojo.TeacherRole;
+import com.example.service.TeacherService;
+import com.example.vo.TeacherRoleVo;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+@Service
+public class TeacherServiceImpl extends ServiceImpl<TeacherMapper,Teacher> implements TeacherService {
+
+    @Autowired
+    private TeacherMapper teacherMapper;
+
+    @Autowired
+    private TeacherRoleMapper teacherRoleMapper;
+
+    @Autowired
+    private RoleMapper roleMapper;
+
+
+    @Transactional
+    public List<TeacherRoleVo> listVo(String name, String workNo) {
+        List<TeacherRoleVo> teacherRoleVoList = new ArrayList<>();
+
+        LambdaQueryWrapper<Teacher> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(name != null,Teacher::getName,name);
+        queryWrapper.like(workNo != null,Teacher::getWorkNo,workNo);
+        List<Teacher> teacherList = teacherMapper.selectList(queryWrapper);
+
+        for (Teacher teacher : teacherList) {
+            List<Role> roleList = new ArrayList<>();
+            LambdaQueryWrapper<TeacherRole> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(TeacherRole::getTeacherId,teacher.getId());
+            List<TeacherRole> teacherRoleList = teacherRoleMapper.selectList(queryWrapper1);
+            for (TeacherRole teacherRole : teacherRoleList) {
+                Role role = roleMapper.selectById(teacherRole.getRoleId());
+                roleList.add(role);
+            }
+            TeacherRoleVo teacherRoleVo = new TeacherRoleVo();
+            BeanUtils.copyProperties(teacher,teacherRoleVo);
+            teacherRoleVo.setRoleList(roleList);
+            teacherRoleVoList.add(teacherRoleVo);
+        }
+        return teacherRoleVoList;
+    }
+
+    @Override
+    @Transactional
+    public void add(Teacher teacher, Long[] roleIds) {
+        LambdaQueryWrapper<Teacher> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Teacher::getWorkNo,teacher.getWorkNo());
+        Teacher selectOne = teacherMapper.selectOne(queryWrapper);
+        if (!Objects.isNull(selectOne)){
+            throw new RuntimeException("该职工已存在!");
+        }
+        teacherMapper.insert(teacher);
+        Long teacherId = teacher.getId();
+        TeacherRole teacherRole = new TeacherRole();
+        for (Long roleId : roleIds) {
+            teacherRole.setTeacherId(teacherId);
+            teacherRole.setRoleId(roleId);
+            teacherRoleMapper.insert(teacherRole);
+        }
+
+    }
+
+    /**
+     * 数据回显
+     * @param teacherId
+     * @return
+     */
+    @Transactional
+    public TeacherRoleVo seleceById(Long teacherId) {
+        List<Role> roleList = new ArrayList<>();
+        Teacher teacher = teacherMapper.selectById(teacherId);
+        LambdaQueryWrapper<TeacherRole> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TeacherRole::getTeacherId,teacher.getId());
+        List<TeacherRole> teacherRoleList = teacherRoleMapper.selectList(queryWrapper);
+        for (TeacherRole teacherRole : teacherRoleList) {
+            Role role = roleMapper.selectById(teacherRole.getRoleId());
+            roleList.add(role);
+        }
+        TeacherRoleVo teacherRoleVo = new TeacherRoleVo();
+        BeanUtils.copyProperties(teacher,teacherRoleVo);
+        teacherRoleVo.setRoleList(roleList);
+        return teacherRoleVo;
+    }
+
+    /**
+     * 用于数据回显时的角色回显判断
+     * @param teacherRoleVo
+     * @return
+     */
+    @Override
+    public List<String> roleNames (TeacherRoleVo teacherRoleVo) {
+        List<String> roleNames = new ArrayList<>();
+        List<Role> roles = teacherRoleVo.getRoleList();
+        for (Role role : roles) {
+            roleNames.add(role.getRoleName());
+        }
+        return roleNames;
+    }
+
+
+    @Transactional
+    public void updateVo(Teacher teacher, Long[] roleIds) {
+        teacherMapper.updateById(teacher);
+        LambdaQueryWrapper<TeacherRole> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TeacherRole::getTeacherId,teacher.getId());
+        teacherRoleMapper.delete(queryWrapper);
+        TeacherRole teacherRole = new TeacherRole();
+        for (Long roleId : roleIds) {
+            teacherRole.setTeacherId(teacher.getId());
+            teacherRole.setRoleId(roleId);
+            teacherRoleMapper.insert(teacherRole);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long teacherId) {
+        LambdaQueryWrapper<TeacherRole> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TeacherRole::getTeacherId,teacherId);
+        teacherRoleMapper.delete(queryWrapper);
+        teacherMapper.deleteById(teacherId);
+    }
+
+
+}
