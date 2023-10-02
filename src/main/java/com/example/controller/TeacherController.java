@@ -1,23 +1,21 @@
 package com.example.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.common.R;
 import com.example.pojo.Role;
 import com.example.pojo.Teacher;
 import com.example.service.RoleService;
 import com.example.service.TeacherService;
 import com.example.vo.TeacherRoleVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/teacher")
 public class TeacherController {
 
@@ -28,13 +26,11 @@ public class TeacherController {
     private RoleService roleService;
 
 
-    @GetMapping("/list")
-    public ModelAndView list (String name, String workNo) {
-        List<TeacherRoleVo> teacherRoleVoList = teacherService.listVo(name,workNo);
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("teacherRoleVoLis",teacherRoleVoList);
-        modelAndView.setViewName("/list.jsp");
-        return modelAndView;
+    @GetMapping("/page")
+    public R<Page<TeacherRoleVo>> Page (int currentPage,int pageSize,String name) {
+        //List<TeacherRoleVo> teacherRoleVoList = teacherService.listVo(name);
+        Page<TeacherRoleVo> page = teacherService.page(currentPage,pageSize, name);
+        return R.success(page);
     }
 
     @PostMapping("/add")

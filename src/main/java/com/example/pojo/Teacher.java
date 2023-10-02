@@ -14,7 +14,7 @@ public class Teacher implements Serializable {
     private String workNo;
     private String name;
     private Integer age;
-    private Boolean sex;
+    private Integer sex;
     private String email;
     private String phone;
 

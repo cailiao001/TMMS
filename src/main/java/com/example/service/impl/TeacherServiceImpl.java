@@ -1,6 +1,7 @@
 package com.example.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.mapper.RoleMapper;
 import com.example.mapper.TeacherMapper;
@@ -33,14 +34,14 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper,Teacher> imple
 
 
     @Transactional
-    public List<TeacherRoleVo> listVo(String name, String workNo) {
-        List<TeacherRoleVo> teacherRoleVoList = new ArrayList<>();
-
+    public Page<TeacherRoleVo> page(int currentPage, int pageSize, String name) {
+        Page<Teacher> page = new Page<>(currentPage,pageSize);
         LambdaQueryWrapper<Teacher> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(name != null,Teacher::getName,name);
-        queryWrapper.like(workNo != null,Teacher::getWorkNo,workNo);
-        List<Teacher> teacherList = teacherMapper.selectList(queryWrapper);
+        Page<Teacher> teacherPage = teacherMapper.selectPage(page, queryWrapper);
+        List<Teacher> teacherList = teacherPage.getRecords();
 
+        List<TeacherRoleVo> teacherRoleVoList = new ArrayList<>();
         for (Teacher teacher : teacherList) {
             List<Role> roleList = new ArrayList<>();
             LambdaQueryWrapper<TeacherRole> queryWrapper1 = new LambdaQueryWrapper<>();
@@ -55,8 +56,40 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper,Teacher> imple
             teacherRoleVo.setRoleList(roleList);
             teacherRoleVoList.add(teacherRoleVo);
         }
-        return teacherRoleVoList;
+
+        Page<TeacherRoleVo> teacherRoleVoPage = new Page<>();
+        BeanUtils.copyProperties(teacherPage,teacherRoleVoPage,"records");
+        teacherRoleVoPage.setRecords(teacherRoleVoList);
+
+        return teacherRoleVoPage;
     }
+
+
+//    @Transactional
+//    public List<TeacherRoleVo> listVo(String name) {
+//        List<TeacherRoleVo> teacherRoleVoList = new ArrayList<>();
+//
+//        LambdaQueryWrapper<Teacher> queryWrapper = new LambdaQueryWrapper<>();
+//        queryWrapper.like(name != null,Teacher::getName,name);
+//        List<Teacher> teacherList = teacherMapper.selectList(queryWrapper);
+//
+//        for (Teacher teacher : teacherList) {
+//            List<Role> roleList = new ArrayList<>();
+//            LambdaQueryWrapper<TeacherRole> queryWrapper1 = new LambdaQueryWrapper<>();
+//            queryWrapper1.eq(TeacherRole::getTeacherId,teacher.getId());
+//            List<TeacherRole> teacherRoleList = teacherRoleMapper.selectList(queryWrapper1);
+//            for (TeacherRole teacherRole : teacherRoleList) {
+//                Role role = roleMapper.selectById(teacherRole.getRoleId());
+//                roleList.add(role);
+//            }
+//            TeacherRoleVo teacherRoleVo = new TeacherRoleVo();
+//            BeanUtils.copyProperties(teacher,teacherRoleVo);
+//            teacherRoleVo.setRoleList(roleList);
+//            teacherRoleVoList.add(teacherRoleVo);
+//        }
+//        return teacherRoleVoList;
+//    }
+
 
     @Override
     @Transactional
