@@ -7,10 +7,12 @@ import com.example.pojo.Teacher;
 import com.example.service.RoleService;
 import com.example.service.TeacherService;
 import com.example.vo.TeacherRoleVo;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.websocket.server.PathParam;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
@@ -28,20 +30,19 @@ public class TeacherController {
 
     @GetMapping("/page")
     public R<Page<TeacherRoleVo>> Page (int currentPage,int pageSize,String name) {
-        //List<TeacherRoleVo> teacherRoleVoList = teacherService.listVo(name);
         Page<TeacherRoleVo> page = teacherService.page(currentPage,pageSize, name);
         return R.success(page);
     }
 
     @PostMapping("/add")
-    public String add (Teacher teacher,Long[] roleIds) throws UnsupportedEncodingException {
+    public R<String> add (@RequestBody TeacherRoleVo teacherRoleVo)  {
         try {
-            teacherService.add(teacher,roleIds);
+            teacherService.add(teacherRoleVo,teacherRoleVo.getRoleIds());
         }catch (RuntimeException e){
             e.printStackTrace();
-            return "redirect:/role/list?msg="+ URLEncoder.encode(e.getMessage(),"UTF-8");
+            return R.error(e.getMessage());
         }
-        return "redirect:/teacher/list";
+        return R.success("添加成功");
     }
 
 
@@ -51,28 +52,21 @@ public class TeacherController {
      * @return
      */
     @GetMapping("/seleceById/{teacherId}")
-        public ModelAndView seleceById (@PathVariable Long teacherId ) {
+        public R<TeacherRoleVo> seleceById (@PathVariable Long teacherId ) {
         TeacherRoleVo teacherRoleVo = teacherService.seleceById(teacherId);
-        List<String> roleNames = teacherService.roleNames(teacherRoleVo);
-        List<Role> roleList = roleService.list();
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("roleNames",roleNames);
-        modelAndView.addObject("teacherRoleVo",teacherRoleVo);
-        modelAndView.addObject("roleList",roleList);
-        modelAndView.setViewName("/update.jsp");
-        return modelAndView;
+        return R.success(teacherRoleVo);
     }
 
     @PostMapping("/update")
-    public String update (Teacher teacher,Long[] roleIds) {
-        teacherService.updateVo(teacher,roleIds);
-        return "redirect:/teacher/list";
+    public R<String> update (@RequestBody TeacherRoleVo teacherRoleVo) {
+        teacherService.updateVo(teacherRoleVo,teacherRoleVo.getRoleIds());
+        return R.success("更新成功");
     }
 
     @GetMapping("/delete/{teacherId}")
-    public String delete (@PathVariable Long teacherId) {
+    public R<String> delete (@PathVariable Long teacherId) {
         teacherService.delete(teacherId);
-        return "redirect:/teacher/list";
+        return R.success("删除成功");
     }
 
 }

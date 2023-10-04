@@ -8,7 +8,6 @@ import com.example.vo.TeacherRoleVo;
 import java.util.List;
 
 public interface TeacherService extends IService<Teacher> {
-    //List<TeacherRoleVo> listVo(String name);
 
     //分页
     Page<TeacherRoleVo> page (int currentPage,int pageSize,String name);
@@ -16,8 +15,6 @@ public interface TeacherService extends IService<Teacher> {
     void add(Teacher teacher, Long[] roleIds);
 
     TeacherRoleVo seleceById(Long teacherId);
-
-    List<String> roleNames (TeacherRoleVo teacherRoleVo);
 
     void updateVo(Teacher teacher, Long[] roleIds);
 

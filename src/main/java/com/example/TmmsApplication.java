@@ -6,7 +6,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
-//@ServletComponentScan
+@ServletComponentScan
 @EnableTransactionManagement
 public class TmmsApplication {
 

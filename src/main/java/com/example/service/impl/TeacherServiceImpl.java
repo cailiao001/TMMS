@@ -65,33 +65,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper,Teacher> imple
     }
 
 
-//    @Transactional
-//    public List<TeacherRoleVo> listVo(String name) {
-//        List<TeacherRoleVo> teacherRoleVoList = new ArrayList<>();
-//
-//        LambdaQueryWrapper<Teacher> queryWrapper = new LambdaQueryWrapper<>();
-//        queryWrapper.like(name != null,Teacher::getName,name);
-//        List<Teacher> teacherList = teacherMapper.selectList(queryWrapper);
-//
-//        for (Teacher teacher : teacherList) {
-//            List<Role> roleList = new ArrayList<>();
-//            LambdaQueryWrapper<TeacherRole> queryWrapper1 = new LambdaQueryWrapper<>();
-//            queryWrapper1.eq(TeacherRole::getTeacherId,teacher.getId());
-//            List<TeacherRole> teacherRoleList = teacherRoleMapper.selectList(queryWrapper1);
-//            for (TeacherRole teacherRole : teacherRoleList) {
-//                Role role = roleMapper.selectById(teacherRole.getRoleId());
-//                roleList.add(role);
-//            }
-//            TeacherRoleVo teacherRoleVo = new TeacherRoleVo();
-//            BeanUtils.copyProperties(teacher,teacherRoleVo);
-//            teacherRoleVo.setRoleList(roleList);
-//            teacherRoleVoList.add(teacherRoleVo);
-//        }
-//        return teacherRoleVoList;
-//    }
 
-
-    @Override
     @Transactional
     public void add(Teacher teacher, Long[] roleIds) {
         LambdaQueryWrapper<Teacher> queryWrapper = new LambdaQueryWrapper<>();
@@ -118,35 +92,21 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper,Teacher> imple
      */
     @Transactional
     public TeacherRoleVo seleceById(Long teacherId) {
-        List<Role> roleList = new ArrayList<>();
+        List<Long> roleIds = new ArrayList<>();
         Teacher teacher = teacherMapper.selectById(teacherId);
         LambdaQueryWrapper<TeacherRole> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TeacherRole::getTeacherId,teacher.getId());
         List<TeacherRole> teacherRoleList = teacherRoleMapper.selectList(queryWrapper);
         for (TeacherRole teacherRole : teacherRoleList) {
             Role role = roleMapper.selectById(teacherRole.getRoleId());
-            roleList.add(role);
+            roleIds.add(role.getId());
         }
         TeacherRoleVo teacherRoleVo = new TeacherRoleVo();
         BeanUtils.copyProperties(teacher,teacherRoleVo);
-        teacherRoleVo.setRoleList(roleList);
+        teacherRoleVo.setRoleIds(roleIds.toArray(new Long[0]));
         return teacherRoleVo;
     }
 
-    /**
-     * 用于数据回显时的角色回显判断
-     * @param teacherRoleVo
-     * @return
-     */
-    @Override
-    public List<String> roleNames (TeacherRoleVo teacherRoleVo) {
-        List<String> roleNames = new ArrayList<>();
-        List<Role> roles = teacherRoleVo.getRoleList();
-        for (Role role : roles) {
-            roleNames.add(role.getRoleName());
-        }
-        return roleNames;
-    }
 
 
     @Transactional
@@ -163,7 +123,6 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper,Teacher> imple
         }
     }
 
-    @Override
     @Transactional
     public void delete(Long teacherId) {
         LambdaQueryWrapper<TeacherRole> queryWrapper = new LambdaQueryWrapper<>();

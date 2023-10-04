@@ -10,6 +10,9 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+
+import com.google.gson.Gson;
 
 /**
  * 检查用户是否已经完成登录
@@ -51,7 +54,12 @@ public class LoginCheckFilter implements Filter {
 
         //5.如果未登录，返回未登录结果,通过输出流方式向客户端页面响应数据
         log.info("用户未登录");
-        response.getWriter().write(JSON.toJSONString(R.error("用户未登录!")));
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
+        out.print(new Gson().toJson(R.error("用户未登录,请先登录！")));
+        out.flush();
+
     }
 
     /**

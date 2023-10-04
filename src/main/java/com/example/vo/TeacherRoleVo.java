@@ -12,4 +12,5 @@ import java.util.List;
 public class TeacherRoleVo extends Teacher implements Serializable {
     private static final long serialVersionUID = 1L;
     private List<Role> roleList;
+    private Long[] roleIds;
 }

@@ -1,18 +1,17 @@
 package com.example.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.common.R;
 import com.example.pojo.Role;
 import com.example.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/role")
 public class RoleControll {
 
@@ -20,31 +19,37 @@ public class RoleControll {
     private RoleService roleService;
 
     @GetMapping("/list")
-    public ModelAndView list () {
+    public R<List<Role>> list () {
         List<Role> roleList = roleService.list();
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("roleList",roleList);
-        modelAndView.setViewName("/add.jsp");
-        return modelAndView;
+        return R.success(roleList);
     }
 
-    @GetMapping("/listRole")
-    public ModelAndView listRole () {
-        List<Role> roleList = roleService.list();
-        ModelAndView modelAndView = new ModelAndView();
-        modelAndView.addObject("roleList",roleList);
-        modelAndView.setViewName("/rolelist.jsp");
-        return modelAndView;
+    @GetMapping("/page")
+    public R<Page<Role>> page (int currentPage,int pageSize,String name) {
+        Page<Role> page = roleService.rolePage(currentPage,pageSize, name);
+        return R.success(page);
     }
 
     @PostMapping("/add")
-    public String add (Role role) {
+    public R<String> add (@RequestBody Role role) {
         roleService.save(role);
-        return "redirect:/role/listRole";
+        return R.success("添加成功");
     }
     @GetMapping("/delete/{id}")
-    public String delete (@PathVariable Long id) {
+    public R<String> delete (@PathVariable Long id) {
         roleService.delete(id);
-        return "redirect:/role/listRole";
+        return R.success("删除成功");
+    }
+
+    @GetMapping("/selectById/{roleId}")
+    public R<Role> selectById (@PathVariable Long roleId) {
+        Role role = roleService.selectById(roleId);
+        return R.success(role);
+    }
+
+    @PostMapping("/update")
+    public R<String> update (@RequestBody Role role){
+        roleService.updateById(role);
+        return R.success("更新成功");
     }
 }
