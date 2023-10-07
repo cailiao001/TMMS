@@ -68,12 +68,11 @@ public class UserController {
     }
 
 
-    /*@GetMapping("/logout")
-    public String logout (HttpServletRequest request) {
+    @GetMapping("/logout")
+    public R<String> logout (HttpServletRequest request) {
         request.getSession().removeAttribute("user");
         log.info("退出登录.................................");
-        return "redirect:/login.jsp";
+        return R.success("退出成功");
     }
-*/
 
 }
