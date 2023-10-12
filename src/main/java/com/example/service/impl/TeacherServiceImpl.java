@@ -124,11 +124,11 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper,Teacher> imple
     }
 
     @Transactional
-    public void delete(Long teacherId) {
+    public void delete(List<Long> ids) {
         LambdaQueryWrapper<TeacherRole> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TeacherRole::getTeacherId,teacherId);
+        queryWrapper.in(TeacherRole::getTeacherId,ids);
         teacherRoleMapper.delete(queryWrapper);
-        teacherMapper.deleteById(teacherId);
+        teacherMapper.deleteBatchIds(ids);
     }
 
 

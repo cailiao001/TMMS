@@ -18,6 +18,6 @@ public interface TeacherService extends IService<Teacher> {
 
     void updateVo(Teacher teacher, Long[] roleIds);
 
-    void delete(Long teacherId);
+    void delete(List<Long> ids);
 
 }

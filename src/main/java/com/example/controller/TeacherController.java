@@ -24,12 +24,9 @@ public class TeacherController {
     @Autowired
     private TeacherService teacherService;
 
-    @Autowired
-    private RoleService roleService;
-
 
     @GetMapping("/page")
-    public R<Page<TeacherRoleVo>> Page (int currentPage,int pageSize,String name) {
+    public R<Page<TeacherRoleVo>> page (int currentPage,int pageSize,String name) {
         Page<TeacherRoleVo> page = teacherService.page(currentPage,pageSize, name);
         return R.success(page);
     }
@@ -63,9 +60,9 @@ public class TeacherController {
         return R.success("更新成功");
     }
 
-    @GetMapping("/delete/{teacherId}")
-    public R<String> delete (@PathVariable Long teacherId) {
-        teacherService.delete(teacherId);
+    @GetMapping("/delete")
+    public R<String> delete (@RequestParam List<Long> ids) {
+        teacherService.delete(ids);
         return R.success("删除成功");
     }
 
