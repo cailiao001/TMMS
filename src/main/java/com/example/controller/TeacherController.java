@@ -2,19 +2,13 @@ package com.example.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.common.R;
-import com.example.pojo.Role;
-import com.example.pojo.Teacher;
-import com.example.service.RoleService;
 import com.example.service.TeacherService;
 import com.example.vo.TeacherRoleVo;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-
-import javax.websocket.server.PathParam;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.List;
 
 @RestController
@@ -26,12 +20,14 @@ public class TeacherController {
 
 
     @GetMapping("/page")
+    @Cacheable(value = "TeacherPageCache",key = "#currentPage+'_'+#pageSize+'_'+#name")
     public R<Page<TeacherRoleVo>> page (int currentPage,int pageSize,String name) {
         Page<TeacherRoleVo> page = teacherService.page(currentPage,pageSize, name);
         return R.success(page);
     }
 
     @PostMapping("/add")
+    @CacheEvict(value = "TeacherPageCache",allEntries = true)
     public R<String> add (@RequestBody TeacherRoleVo teacherRoleVo)  {
         try {
             teacherService.add(teacherRoleVo,teacherRoleVo.getRoleIds());
@@ -55,12 +51,14 @@ public class TeacherController {
     }
 
     @PostMapping("/update")
+    @CacheEvict(value = "TeacherPageCache",allEntries = true)
     public R<String> update (@RequestBody TeacherRoleVo teacherRoleVo) {
         teacherService.updateVo(teacherRoleVo,teacherRoleVo.getRoleIds());
         return R.success("更新成功");
     }
 
     @GetMapping("/delete")
+    @CacheEvict(value = "TeacherPageCache",allEntries = true)
     public R<String> delete (@RequestParam List<Long> ids) {
         teacherService.delete(ids);
         return R.success("删除成功");

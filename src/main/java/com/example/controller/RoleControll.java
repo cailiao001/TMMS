@@ -5,6 +5,8 @@ import com.example.common.R;
 import com.example.pojo.Role;
 import com.example.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -19,23 +21,27 @@ public class RoleControll {
     private RoleService roleService;
 
     @GetMapping("/list")
+    @Cacheable(value = "RoleListCache")
     public R<List<Role>> list () {
         List<Role> roleList = roleService.list();
         return R.success(roleList);
     }
 
     @GetMapping("/page")
+    @Cacheable(value = "RolePageCache",key = "#currentPage+'_'+#pageSize+'_'+#name")
     public R<Page<Role>> page (int currentPage,int pageSize,String name) {
         Page<Role> page = roleService.rolePage(currentPage,pageSize, name);
         return R.success(page);
     }
 
     @PostMapping("/add")
+    @CacheEvict(value = {"RolePageCache","RoleListCache"},allEntries = true)
     public R<String> add (@RequestBody Role role) {
         roleService.save(role);
         return R.success("添加成功");
     }
     @GetMapping("/delete/{id}")
+    @CacheEvict(value = {"RolePageCache","RoleListCache"},allEntries = true)
     public R<String> delete (@PathVariable Long id) {
         roleService.delete(id);
         return R.success("删除成功");
@@ -48,6 +54,7 @@ public class RoleControll {
     }
 
     @PostMapping("/update")
+    @CacheEvict(value = {"RolePageCache","RoleListCache"},allEntries = true)
     public R<String> update (@RequestBody Role role){
         roleService.updateById(role);
         return R.success("更新成功");
